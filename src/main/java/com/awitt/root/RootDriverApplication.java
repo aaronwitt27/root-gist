@@ -1,5 +1,9 @@
 package com.awitt.root;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
@@ -18,17 +22,29 @@ public class RootDriverApplication {
 		final String file;
 
 		try {
-			file = getCommandLineArgs(args).getOptionValue(OPT_FILE_PATH_SHORT);
+			file = parseCommandLineArgs(args).getOptionValue(OPT_FILE_PATH_SHORT);
+			LOGGER.info("loading {}", file);
 		} catch (ParseException e) {
 			LOGGER.error("An exception occurred while attempting to parse command line options: {}", args, e);
 			System.exit(1);
 			return;
 		}
 
-		LOGGER.info("loading {}", file);
+		try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+			final DriverTracker tracker = new DriverTracker(bufferedReader);
+			tracker.doThing();
+
+			// TODO:
+		} catch (IOException e) {
+			LOGGER.error("An exception occurred while attempting to load file", e);
+			System.exit(1);
+			return;
+		}
+
+		System.exit(0);
 	}
 
-	private static CommandLine getCommandLineArgs(final String[] args) throws ParseException {
+	private static CommandLine parseCommandLineArgs(final String[] args) throws ParseException {
 		return new DefaultParser().parse(buildOptions(), args);
 	}
 
