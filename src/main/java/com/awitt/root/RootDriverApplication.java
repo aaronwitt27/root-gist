@@ -32,11 +32,20 @@ public class RootDriverApplication {
 
 		try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
 			final DriverTracker tracker = new DriverTracker(bufferedReader);
-			tracker.doThing();
 
-			// TODO:
+			try {
+				tracker.process();
+			} catch (IOException e) {
+				LOGGER.error("An exception occurred while attempting to process file", e);
+				System.exit(1);
+				return;
+			}
 		} catch (IOException e) {
 			LOGGER.error("An exception occurred while attempting to load file", e);
+			System.exit(1);
+			return;
+		} catch (Throwable t) {
+			LOGGER.error("An unexpected exception occurred while attempting to process file", t);
 			System.exit(1);
 			return;
 		}
