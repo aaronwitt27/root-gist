@@ -14,6 +14,11 @@ I try to encapsulate logic and data in the objects to which they belong; if a `T
 
 ## Additional Considerations
 
+## Data format
+While parsing the file, I made the decision to immediately end the application if bad data is encountered; if there is an unknown command or unexpected or malformed data, it very well may represent a larger issue with the incoming data as whole, or very possibly with the application itself.  With this in mind, it doesn't seem to make sense to continue to run the applciation, when its output would then be non-deterministic.  Personally, I'd much rather _know_ that what I'm seeing is accurate and precise, than to not see an application crash.
+
+That being said, it seemed easy enough to me to, at least, account for commands that may not be ordered.  That is, what if a `Trip` command occurred before that driver had been registered by the `Driver` command.  That's why the `Action` enum's `doCommand` method might possibly return the same line that was to be processed, according to the javadoc.  That way, the orchestrating class can handle reprocessing those lines, so that their order in the data file does not matter.
+
 ### Fail-fast
 I am a strong proponent of the fail-fast paradigm, which allows the developer to know, as early as possible, when an invariant or expectation is not met.  This aids in quick development, makes writing tests easier, and acts as additional documentation.
 
