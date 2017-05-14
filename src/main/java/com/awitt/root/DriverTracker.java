@@ -40,6 +40,8 @@ public class DriverTracker {
 
 		// REPROCESS UNTIL ALL COMMANDS DONE
 		reprocess(toReprocess, 1);
+
+		this.drivers.values().stream().forEach(System.out::println);
 	}
 
 	private void processLine(final String line, final List<String> toReprocess) {
@@ -53,7 +55,7 @@ public class DriverTracker {
 	private Optional<String> processLine(final String line) {
 
 		if (StringUtils.isNotBlank(line)) {
-			return pickStategy(line).doCommand(line, drivers);
+			return pickStategy(line).doCommand(line, this.drivers);
 		}
 
 		return Optional.empty();

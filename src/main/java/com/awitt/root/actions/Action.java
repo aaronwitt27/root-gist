@@ -26,7 +26,7 @@ public enum Action {
 			Validate.notBlank(line, "line cannot be blank");
 			Validate.notNull(drivers, "drivers cannot be null");
 
-			final String name = line.substring(line.indexOf(" "));
+			final String name = line.substring(line.indexOf(" ") + 1);
 
 			if (drivers.get(name.toLowerCase()) == null) {
 				LOGGER.info("registering {}", name);
@@ -56,6 +56,8 @@ public enum Action {
 			final Optional<Driver> driver = getDriver(name, drivers);
 
 			if (!driver.isPresent()) {
+				LOGGER.info(drivers.toString());
+				LOGGER.info("driver not registered yet: {}", name);
 				return Optional.of(line);
 			}
 
@@ -64,7 +66,9 @@ public enum Action {
 			final String distance = metrics[4];
 
 			try {
-				driver.get().getTrips().add(new Trip(start, end, distance));
+				final Trip trip = new Trip(start, end, distance);
+				LOGGER.info("adding new trip for {}: {}", name, trip);
+				driver.get().getTrips().add(trip);
 			} catch (DateTimeParseException | NumberFormatException e) {
 				throw new RuntimeException("Trip data in an unexpected format: " + line, e);
 			}
