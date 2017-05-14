@@ -8,6 +8,10 @@ My main though process in providing this solution was extensibility and maintain
 
 To this end, I took a strategy approach, encapsulating the strategy for each command in an enum; this is the natural place in the project in which to add new commands.  The main class, `DriverTracker`, orchestrates all the necessary logic to parse the input file, process its data, and run each command, without needing to know the details of any particular line or command logic.  Even the `RootDriverApplication` bootstrap class uses the CLI library, allowing for easy plug-and-play of additional command-line arguments with descriptions and validation.
 
+I tend to prefer strongly-typed objects (particularly coming from such a strong Java background), so after parsing, I instantiate POJOs representing the data I just parsed.  This allows me to keep the data immutable, when possible, checking all invariants at creation-time, and dealing with bad data up-front so that the ensuing application logic _knows_ that it has what it needs to perform its function.
+
+I try to encapsulate logic and data in the objects to which they belong; if a `Trip` class contains its own consituent components, then it can also calculate its own average speed. 
+
 ## Additional Considerations
 
 ### Fail-fast
