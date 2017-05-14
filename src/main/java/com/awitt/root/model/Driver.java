@@ -1,7 +1,6 @@
 package com.awitt.root.model;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
@@ -11,35 +10,57 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
  * POJO representing a Root Driver and their associated metrics.
  */
-public class Driver implements Comparator<Driver> {
+public class Driver implements Comparable<Driver> {
 
 	private final String name;
 	private final List<Trip> trips;
 	private DrivingSummary drivingSummary;
 
+	/**
+	 * Creates a new instance of this class.
+	 * 
+	 * @param name
+	 *            the name of the Driver
+	 */
 	public Driver(final String name) {
 		Validate.notBlank(name, "name cannot be blank");
 
 		this.name = name;
 		this.trips = new ArrayList<>();
-		this.drivingSummary = DrivingSummary.noData();
+		this.drivingSummary = new DrivingSummary();
+	}
+
+	/**
+	 * This method filters out all {@link Trip trips} that
+	 * {@link Trip#meetsTripRequirements() do not meet} Trip requirements and
+	 * then adds each valid Trip's info the this Driver's
+	 * {@link DrivingSummary}.
+	 * 
+	 * @return {@code this} {@link Driver}, for chaining
+	 */
+	public Driver aggregateTrips() {
+
+		// RESET PREVIOUSLY-AGGREGATED DATA BEFORE RE-AGGREGATING
+		if (!this.drivingSummary.equals(DrivingSummary.NO_DATA)) {
+			this.drivingSummary = new DrivingSummary();
+		}
+
+		// FILTER OUT INVALID TRIPS AND ADD THE OTHERS' INFO TO THE SUMMARY
+		this.trips.stream().filter(Trip::meetsTripRequirements).forEach(this.drivingSummary::addTripInfo);
+
+		return this;
+	}
+
+	public List<Trip> getTrips() {
+		return this.trips;
 	}
 
 	public DrivingSummary getDrivingSummary() {
 		return this.drivingSummary;
 	}
 
-	public void setDrivingSummary(final DrivingSummary drivingSummary) {
-		Validate.notNull(drivingSummary, "drivingSummary cannot be null");
-		this.drivingSummary = drivingSummary;
-	}
-
 	public String getName() {
 		return this.name;
-	}
-
-	public List<Trip> getTrips() {
-		return this.trips;
 	}
 
 	@Override
@@ -89,17 +110,19 @@ public class Driver implements Comparator<Driver> {
 		return builder.build();
 	}
 
+	/**
+	 * Defines natural ordering of this class as the total distance. If this
+	 * driver's {@link DrivingSummary#getTotalDistance() total distance} is
+	 * greater than the {@code other}'s, {@code 1} is returned; if less,
+	 * {@code -1} is returned; and if equal, {@code 0} is returned.
+	 * 
+	 * @param otherDriver
+	 *            the other {@link Driver} against which to compare
+	 */
 	@Override
-	public int compare(final Driver driver1, final Driver driver2) {
-
-		if (driver1 == null && driver2 == null) {
-			return 0;
-		} else if (driver1 == null) {
-			return -1;
-		} else if (driver2 == null) {
-			return 1;
-		}
-
-		return Integer.compare(driver1.getDrivingSummary().getDistance(), driver2.getDrivingSummary().getDistance());
+	public int compareTo(final Driver otherDriver) {
+		return -1 * ((otherDriver == null) ? 1
+				: (Integer.compare((int) Math.rint(this.getDrivingSummary().getTotalDistance()),
+						(int) Math.rint(otherDriver.getDrivingSummary().getTotalDistance()))));
 	}
 }

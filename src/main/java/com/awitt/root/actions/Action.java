@@ -56,7 +56,6 @@ public enum Action {
 			final Optional<Driver> driver = getDriver(name, drivers);
 
 			if (!driver.isPresent()) {
-				LOGGER.info(drivers.toString());
 				LOGGER.info("driver not registered yet: {}", name);
 				return Optional.of(line);
 			}
@@ -81,6 +80,12 @@ public enum Action {
 
 	private final String command;
 
+	/**
+	 * Performs the logic necessary for this Action's function. If the function
+	 * cannot be performed, the provided {@code line} should be returned as an
+	 * {@link Optional}, otherwise an {@link Optional#empty() empty optional}
+	 * should be returned by the implementation.
+	 **/
 	public abstract Optional<String> doCommand(String line, Map<String, Driver> drivers);
 
 	private Action(final String command) {
@@ -88,19 +93,42 @@ public enum Action {
 		this.command = command;
 	}
 
+	/**
+	 * @param line
+	 *            a line of data to be processed
+	 * @return whether or not this {@code line} is to be processed by this
+	 *         {@link Action}
+	 */
 	public boolean isCommand(final String line) {
 		return StringUtils.isNotBlank(line) && line.split(" ")[0].equalsIgnoreCase(getCommand());
 	}
 
+	/**
+	 * @return the String representation of this {@link Action} mirroring the
+	 *         command text in a ROOT Driver metric file
+	 */
 	public String getCommand() {
 		return this.command;
 	}
 
+	/**
+	 * @param metricAction
+	 *            the string from which to get the corresponding {@link Action}
+	 * @return the {@link Action} corresponding to the provided
+	 *         {@code metricAction}
+	 */
 	public static Optional<Action> fromString(final String metricAction) {
 		return EnumSet.allOf(Action.class).stream().filter(action -> action.getCommand().equalsIgnoreCase(metricAction))
 				.findFirst();
 	}
 
+	/**
+	 * @param name
+	 *            the name of the {@link Driver} to retrieve
+	 * @param drivers
+	 *            a {@link Map} of Drivers
+	 * @return an {@link Optional} of the {@link Driver}
+	 */
 	public Optional<Driver> getDriver(final String name, final Map<String, Driver> drivers) {
 
 		assert StringUtils.isNotBlank(name) : "name cannot be blank";

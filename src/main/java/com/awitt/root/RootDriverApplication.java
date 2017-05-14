@@ -12,6 +12,11 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Bootstrap for the application that parses command line arguments,
+ * instantiates the main working class, and handles exceptions and program
+ * execution.
+ */
 public class RootDriverApplication {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RootDriverApplication.class);
@@ -32,14 +37,7 @@ public class RootDriverApplication {
 
 		try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
 			final DriverTracker tracker = new DriverTracker(bufferedReader);
-
-			try {
-				tracker.process();
-			} catch (IOException e) {
-				LOGGER.error("An exception occurred while attempting to process file", e);
-				System.exit(1);
-				return;
-			}
+			tracker.process();
 		} catch (IOException e) {
 			LOGGER.error("An exception occurred while attempting to load file", e);
 			System.exit(1);

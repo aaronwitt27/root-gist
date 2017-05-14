@@ -1,62 +1,107 @@
 package com.awitt.root.model;
 
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import java.time.Duration;
 
+import org.apache.commons.lang3.Validate;
+
+/**
+ * POJO representing a summary of a {@link Driver}'s {@link Trip}'s.
+ */
 public class DrivingSummary {
 
+	/** The minimum average speed of a valid Trip **/
 	public static final int MIN_AVERAGE_SPEED = 5;
+
+	/** The maximum average speed of a valid Trip **/
 	public static final int MAX_AVERAGE_SPEED = 100;
 
-	private static final DrivingSummary NO_DATA = new DrivingSummary(0, 0);
+	/**
+	 * A newly initialized instance of {@link DrivingSummary} with values set to
+	 * defaults
+	 **/
+	public static final DrivingSummary NO_DATA = new DrivingSummary();
 
-	private final int distance;
-	private final int averageSpeed;
+	private double totalDistance;
+	private long totalDuration;
+	private long averageSpeed;
 
-	private DrivingSummary(final int distance, final int averageSpeed) {
-
-		assert distance >= 0 : "distance cannot be negative";
-		assert averageSpeed >= 0 : "averageSpeed cannot be negative";
-
-		this.distance = distance;
-		this.averageSpeed = averageSpeed;
+	public DrivingSummary() {
+		this.averageSpeed = -1;
+		this.totalDistance = 0;
+		this.totalDuration = 0;
 	}
 
-	public static DrivingSummary noData() {
-		return NO_DATA;
+	/**
+	 * Adds a {@link Trip}'s info to this summary.
+	 * 
+	 * @param trip
+	 *            the Trip to add to this summary
+	 */
+	public void addTripInfo(final Trip trip) {
+		Validate.notNull(trip, "trip cannot be null");
+
+		addDistance(trip.getDistance());
+		addDuration(Duration.between(trip.getStart(), trip.getEnd()).getSeconds());
 	}
 
-	public static DrivingSummary withMetrics(final int distance, final int averageSpeed) {
-
-		Validate.validState(distance >= 0, "distance cannot be negative");
-		Validate.inclusiveBetween(MIN_AVERAGE_SPEED, MAX_AVERAGE_SPEED, averageSpeed,
-				"averageSpeed must be between [%d,%d]", MIN_AVERAGE_SPEED, MAX_AVERAGE_SPEED);
-
-		return new DrivingSummary(distance, averageSpeed);
+	private void addDistance(final double distance) {
+		this.totalDistance += distance;
 	}
 
-	public int getDistance() {
-		return this.distance;
+	private void addDuration(final long duration) {
+		this.totalDuration += duration;
 	}
 
-	public int getAverageSpeed() {
+	private long calculateAverageSpeed() {
+		return Math.round(this.totalDistance / (this.totalDuration / 60.0 / 60.0));
+	}
+
+	/**
+	 * @return the total distance traveled by this {@link Driver} in miles
+	 */
+	public double getTotalDistance() {
+		return this.totalDistance;
+	}
+
+	/**
+	 * @return the total number of seconds traveled by this {@link Driver}
+	 */
+	public long getTotalDuration() {
+		return this.totalDuration;
+	}
+
+	/**
+	 * @return the average speed, in miles per hour, of this {@link Driver}
+	 *         across all valid {@link Trip}s
+	 */
+	public long getAverageSpeed() {
+
+		if (this.averageSpeed == -1) {
+			this.averageSpeed = calculateAverageSpeed();
+		}
+
 		return this.averageSpeed;
 	}
 
 	@Override
 	public String toString() {
-		ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.JSON_STYLE);
-		builder.append("distance", this.distance).append("averageSpeed", this.averageSpeed);
-		return builder.build();
+		final long totalDistance = Math.round(this.totalDistance);
+
+		if (totalDistance == 0) {
+			return String.format("%s miles", totalDistance);
+		}
+
+		return String.format("%s miles @ %s mph", totalDistance, getAverageSpeed());
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + this.averageSpeed;
-		result = prime * result + this.distance;
+		long temp;
+		temp = Double.doubleToLongBits(this.totalDistance);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + (int) (this.totalDuration ^ (this.totalDuration >>> 32));
 		return result;
 	}
 
@@ -69,9 +114,9 @@ public class DrivingSummary {
 		if (getClass() != obj.getClass())
 			return false;
 		DrivingSummary other = (DrivingSummary) obj;
-		if (this.averageSpeed != other.averageSpeed)
+		if (Double.doubleToLongBits(this.totalDistance) != Double.doubleToLongBits(other.totalDistance))
 			return false;
-		if (this.distance != other.distance)
+		if (this.totalDuration != other.totalDuration)
 			return false;
 		return true;
 	}
