@@ -41,7 +41,7 @@ public class DriverTracker {
 		// REPROCESS UNTIL ALL COMMANDS DONE
 		reprocess(toReprocess, 1);
 
-		this.drivers.values().stream().forEach(System.out::println);
+		this.drivers.values().stream().map(Driver::toString).forEach(LOGGER::debug);
 	}
 
 	private void processLine(final String line, final List<String> toReprocess) {
