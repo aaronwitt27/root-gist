@@ -74,8 +74,13 @@ public class DriverTracker {
 		// REPROCESS UNTIL ALL COMMANDS DONE
 		reprocess(toReprocess, 1);
 
-		this.drivers.values().stream().map(Driver::aggregateTrips).sorted()
-				.forEach(driver -> LOGGER.info(driver.getName() + ": " + driver.getDrivingSummary().toString()));
+		// AGGREGATE AND PRINT RESULTS
+		this.drivers.values().stream().map(Driver::aggregateTrips).sorted().forEach(this::printResults);
+	}
+
+	void printResults(final Driver driver) {
+		assert driver != null : "driver cannot be null";
+		LOGGER.info(driver.getName() + ": " + driver.getDrivingSummary().toString());
 	}
 
 	private void processLine(final String line, final List<String> toReprocess) {
